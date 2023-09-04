@@ -10,6 +10,7 @@ import { ChainId } from '../wallet-packages/wallets/core';
 import ModuleSID from '../name-services/sid';
 import ModuleDAS from '../name-services/dotbit';
 import ModuleZKNS from '../name-services/zkns';
+import ModuleSUINS from '../name-services/suins';
 
 
 const IndexPage = () => {
@@ -95,6 +96,10 @@ const IndexPage = () => {
         <div className='w-full flex flex-col pt-2'>
           <p>ZKSync name service</p>
           <ModuleZKNS />
+        </div>
+        <div className='w-full flex flex-col pt-2'>
+          <p>Sui name service</p>
+          <ModuleSUINS />
         </div>
       </div>
     </Layout>
