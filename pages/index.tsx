@@ -20,7 +20,8 @@ const IndexPage = () => {
   const [pubKey, setPubKey] = useState<string | undefined>();
   const [result, setResult] = useState<any>();
   const [error, setError] = useState<any>();
-  
+  const [period, setPeriod] = useState(365);
+
   const onClickConnect = async () => {
     if (!wallet) {
       return;
@@ -81,15 +82,20 @@ const IndexPage = () => {
             )}
           </div>
         </div>
+        <div className='w-full flex flex-row py-4 gap-2'>
+              <p>Rent period</p>
+              <input type="number" className='border text-right' value={period} onChange={(e)=>{setPeriod(Number(e.target.value))}}/>
+              <p>days</p>
+        </div>
         <div className='w-full flex flex-col pt-2'>
           <p>ENS name service</p>
-          <ModuleENS />
+          <ModuleENS RentPeriod={period}/>
         </div>
         <div className='w-full flex flex-col pt-2'>
           <p>SpaceID name service</p>
-          <ModuleSID />
+          <ModuleSID RentPeriod={period}/>
         </div>
-        <div className='w-full flex flex-col pt-2'>
+        {/* <div className='w-full flex flex-col pt-2'>
           <p>DotBit name service</p>
           <ModuleDAS />
         </div>
@@ -100,7 +106,7 @@ const IndexPage = () => {
         <div className='w-full flex flex-col pt-2'>
           <p>Sui name service</p>
           <ModuleSUINS />
-        </div>
+        </div> */}
       </div>
     </Layout>
   );

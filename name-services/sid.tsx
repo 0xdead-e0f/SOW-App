@@ -1,35 +1,38 @@
 import { useWallet } from '../wallet-packages/react';
-import { ethers } from 'ethers';
+import { ethers, providers } from 'ethers';
 import { useState } from 'react';
 import sidABI from '../utils/contract-abi/sid/controller.json';
 import { EVMWallet } from '../wallet-packages/wallets/evm';
 import { formatBytes32String } from 'ethers/lib/utils.js';
 
-const SID = require('@siddomains/sidjs').default;      
-const SIDfunctions = require('@siddomains/sidjs');
-const rpc = require('@siddomains/sidjs/dist/constants/rpc');
+import SIDRegister from '@web3-name-sdk/register'
 
-// const bnb_controller_address = "0x524bd5676d24d89C240276DB69A7De2960F519a7";
-const bnb_controller_address = "0xE170EAbb4226C505318676897ee1B312D867de80";
+// const SID = require('@siddomains/sidjs').default;      
+// const SIDfunctions = require('@siddomains/sidjs');
+// const rpc = require('@siddomains/sidjs/dist/constants/rpc');
+
+// // const bnb_controller_address = "0x524bd5676d24d89C240276DB69A7De2960F519a7";
+// const bnb_controller_address = "0xE170EAbb4226C505318676897ee1B312D867de80";
+// async function getAddressSID(domainName:string) {
+//     try{
+//         const provider = new ethers.providers.JsonRpcProvider(rpc.apis.bsc_mainnet)
+//         const sid = new SID({ provider, sidAddress: SIDfunctions.getSidAddress('56') })
+//         const address = await sid.name(domainName).getAddress();
+//         if(address === '0x0000000000000000000000000000000000000000') return undefined;
+//         return address;
+//     }catch( err) {
+//         throw err;
+//     }
+// }
+
 const providerUrl_bnb = "https://1rpc.io/bnb";
-
-async function getAddressSID(domainName:string) {
-    try{
-        const provider = new ethers.providers.JsonRpcProvider(rpc.apis.bsc_mainnet)
-        const sid = new SID({ provider, sidAddress: SIDfunctions.getSidAddress('56') })
-        const address = await sid.name(domainName).getAddress();
-        if(address === '0x0000000000000000000000000000000000000000') return undefined;
-        return address;
-    }catch( err) {
-        throw err;
-    }
-}
-
-const ModuleSID = ()=>{
+// const chainid = 56;
+const chainid = 97;  //for testnet
+const ModuleSID = ({RentPeriod}: {RentPeriod: number})=>{
     const wallet = useWallet();
     const [name, setName] = useState('nft.bnb');    
     const [rentprice, setRentPrice] = useState(0);
-
+    const [loading, setLoading] = useState(false);
     const [availableName, setAvailableName] = useState(false);
     const handleNameChange = (event: any) => {
         setName(event.target.value);
@@ -37,106 +40,176 @@ const ModuleSID = ()=>{
         setAvailableName(false);
       };
     
-    const processSIDCheckValid = async(domainName: string) => {
-        try {
-            if(!availableName) {
-                const result = await getAddressSID(domainName);
-                if(result) {
-                    alert(`${name} already registered with this address ${result}`);
-                    setRentPrice(0);
-                    setAvailableName(false);
-                    return false; 
-                } else {
-                }
-            }
-            const provider = new ethers.providers.JsonRpcProvider(providerUrl_bnb);
-            (wallet as EVMWallet).switchChain(56);
-            const resultSwitchChain = await (wallet as EVMWallet).switchChain(56).then(()=>{
-                return true;
-            }).catch((err)=>{
-                alert(`Something went error for switch to Ethereum mannet. Error: ${err}`);
-                return false;
-            });
-            if(!resultSwitchChain) return;
+//     const processSIDCheckValid = async(domainName: string) => {
+//         try {
+//             if(!availableName) {
+//                 const result = await getAddressSID(domainName);
+//                 if(result) {
+//                     alert(`${name} already registered with this address ${result}`);
+//                     setRentPrice(0);
+//                     setAvailableName(false);
+//                     return false; 
+//                 } else {
+//                 }
+//             }
+//             const provider = new ethers.providers.JsonRpcProvider(providerUrl_bnb);
+//             (wallet as EVMWallet).switchChain(56);
+//             const resultSwitchChain = await (wallet as EVMWallet).switchChain(56).then(()=>{
+//                 return true;
+//             }).catch((err)=>{
+//                 alert(`Something went error for switch to Ethereum mannet. Error: ${err}`);
+//                 return false;
+//             });
+//             if(!resultSwitchChain) return;
             
-            const signer = (wallet as EVMWallet).getSigner();
-            const ensControllerContract = new ethers.Contract(bnb_controller_address, sidABI, signer );
+//             const signer = (wallet as EVMWallet).getSigner();
+//             const ensControllerContract = new ethers.Contract(bnb_controller_address, sidABI, signer );
             
-            // const addr = await signer.getAddress();
-            const price = await ensControllerContract.rentPrice(domainName, 31536000);
-            setRentPrice(price[0]);
-            setAvailableName(true);
+//             // const addr = await signer.getAddress();
+//             const price = await ensControllerContract.rentPrice(domainName, 31536000);
+//             setRentPrice(price[0]);
+//             setAvailableName(true);
 
-            // const gas = await ensControllerContract.estimateGas.register(domainName, addr, 31536000, formatBytes32String("dotlab") ,
-            //     {
-            //         gasLimit: 510000,
-            //         gasPrice: ethers.utils.parseUnits('10', 'gwei'),
-            //     }
-            // );
+//             // const gas = await ensControllerContract.estimateGas.register(domainName, addr, 31536000, formatBytes32String("dotlab") ,
+//             //     {
+//             //         gasLimit: 510000,
+//             //         gasPrice: ethers.utils.parseUnits('10', 'gwei'),
+//             //     }
+//             // );
 
 
-            return true;
-        } catch (err) {
-            console.log(err);
-        }
-    }
-    const processSIDRegister = async(domainName: string) => {
-        try {
-            const provider = new ethers.providers.JsonRpcProvider(providerUrl_bnb);
-            const resultSwitchChain = await (wallet as EVMWallet).switchChain(56).then(()=>{
-                return true;
-            }).catch((err)=>{
-                alert(`Something went error for switch to Ethereum mannet. Error: ${err}`);
-                return false;
-            });
+//             return true;
+//         } catch (err) {
+//             console.log(err);
+//         }
+//     }
+//     const processSIDRegister = async(domainName: string) => {
+//         try {
+//             const provider = new ethers.providers.JsonRpcProvider(providerUrl_bnb);
+//             const resultSwitchChain = await (wallet as EVMWallet).switchChain(56).then(()=>{
+//                 return true;
+//             }).catch((err)=>{
+//                 alert(`Something went error for switch to Ethereum mainnet. Error: ${err}`);
+//                 return false;
+//             });
 
-            if(!resultSwitchChain) return;
+//             if(!resultSwitchChain) return;
             
-            const signer = (wallet as EVMWallet).getSigner();
-            const ensControllerContract = new ethers.Contract(bnb_controller_address, sidABI, signer );
+//             const signer = (wallet as EVMWallet).getSigner();
+//             const ensControllerContract = new ethers.Contract(bnb_controller_address, sidABI, signer );
             
-            const resultCommit = await ensControllerContract.commit(formatBytes32String("dotlab"));
-            const txCommitReceipt = await resultCommit.wait();
-            if (txCommitReceipt.status !== 1) {
-                alert('Commit error');
-                return;
-            }
+//             const resultCommit = await ensControllerContract.commit(formatBytes32String("dotlab"));
+//             const txCommitReceipt = await resultCommit.wait();
+//             if (txCommitReceipt.status !== 1) {
+//                 alert('Commit error');
+//                 return;
+//             }
 
-            const addr = await signer.getAddress();
+//             const addr = await signer.getAddress();
 
-            const resultRegister = await ensControllerContract.register(domainName, addr, 31536000, formatBytes32String("dotlab"), {
-                value: rentprice ,
-                gasLimit: 510000,
-                nonce: undefined,
-            } );
+//             const resultRegister = await ensControllerContract.register(domainName, addr, 31536000, formatBytes32String("dotlab"), {
+//                 value: rentprice ,
+//                 gasLimit: 510000,
+//                 nonce: undefined,
+//             } );
 
-            const txRegisterReceipt = await resultRegister.wait();
-            alert(txRegisterReceipt);
+//             const txRegisterReceipt = await resultRegister.wait();
+//             alert(txRegisterReceipt);
 
-            return true;
-        } catch (err) {
-            alert(err)
-        }
+//             return true;
+//         } catch (err) {
+//             alert(err)
+//         }
         
+//     }
+
+
+    const processSIDCheckValid = async(domainName: string) => {
+        if(RentPeriod < 365) {
+            alert("Rent period must be larger than 1 year.");
+            return;
+        }
+
+        // const provider = new providers.Web3Provider(window.ethereum)
+        // switch to bsc
+        const resultSwitchChain = await (wallet as EVMWallet).switchChain(chainid).then(()=>{
+            return true;
+        }).catch((err)=>{
+            alert(`Something went error for switch to Ethereum mannet. Error: ${err}`);
+            return false;
+        });
+
+        if(!resultSwitchChain) return false;
+        
+        // get signer
+        // const signer = provider.getSigner()
+        const signer = (wallet as EVMWallet).getSigner();
+        // get address
+        const address = await signer.getAddress()
+        // init SIDRegister
+        const register = new SIDRegister({ signer, chainId: chainid })
+        // check if available
+        const available = await register.getAvailable(domainName)
+        setAvailableName(available);
+        if(available === false)
+        {
+            return available;
+        }
+        // get price
+        const price = await register.getRentPrice(domainName, (RentPeriod / 365))
+        setRentPrice(price);
+        setAvailableName(true);
+        return true;
+    }
+
+    const processSIDRegister = async(domainName: string) => {
+        // const provider = new providers.Web3Provider(window.ethereum)
+        const provider = new ethers.providers.JsonRpcProvider(providerUrl_bnb);
+        // switch to bsc
+        const resultSwitchChain = await (wallet as EVMWallet).switchChain(chainid).then(()=>{
+            return true;
+        }).catch((err)=>{
+            alert(`Something went error for switch to Ethereum mannet. Error: ${err}`);
+            return false;
+        });
+        if(!resultSwitchChain) return false;
+
+         // get signer
+        // const signer = provider.getSigner()
+        const signer = (wallet as EVMWallet).getSigner();
+        // get address
+        const address = await signer.getAddress()
+        // init SIDRegister
+        const register = new SIDRegister({ signer, chainId: chainid })
+
+        await register.register(domainName, address, (RentPeriod / 365))
+        
+        return true;
+
     }
 
     const handleCheckClick =()=>{
+        setLoading(true);
         processSIDCheckValid(name).then((result)=>{
             if(result===true) {
                 alert("Please register");
             }
+            setLoading(false);
         });
     }
 
     const handleRegisterClick = () => {
+        setLoading(true);
         processSIDRegister(name).then((result)=>{
             if(result === true)
                 alert("finished");
+            
+            setLoading(false);
         })
     }
 
     return (
-        <div className='w-full flex flex-col gap-2'>
+        <div className='w-full flex flex-col gap-2 relative'>
             <div className='w-full flex flex-row gap-2 items-center justify-center px-8'>
                 <input
                     id="name"
@@ -167,7 +240,17 @@ const ModuleSID = ()=>{
                 </button>
             </div>
             <div className='pl-[100px]'>
-                <span>{`Rent price is ${ethers.utils.formatEther(rentprice)}`}</span>
+                <span>{`Rent price is ${ethers.utils.formatEther(rentprice)} BNB`}</span>
+            </div>
+
+            <div className={`${loading? 'visible': 'invisible'} absolute z-50 top-0
+              w-full h-full flex flex-col items-center justify-center bg-black/20`}>
+              <div className="mx-10 flex h-[100px] w-[300px] flex-col items-center justify-center rounded-3xl bg-black/20 px-4">
+                  <div className="loading-spinner "></div>
+                  <span className="pt-[5px] text-[14px] text-white">
+                      Processing...
+                  </span>
+              </div>
             </div>
         </div>
     )
