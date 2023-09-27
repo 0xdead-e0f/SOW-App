@@ -6,7 +6,7 @@ import { EVMWallet } from '../wallet-packages/wallets/evm';
 import { formatBytes32String } from 'ethers/lib/utils.js';
 
 import SIDRegister from '@web3-name-sdk/register'
-
+import { validateName } from '@siddomains/sidjs'
 // const SID = require('@siddomains/sidjs').default;      
 // const SIDfunctions = require('@siddomains/sidjs');
 // const rpc = require('@siddomains/sidjs/dist/constants/rpc');
@@ -188,9 +188,28 @@ const ModuleSID = ({RentPeriod}: {RentPeriod: number})=>{
 
     }
 
+    const getLabel = (domainName: string) => {
+        var nameArray = name.split('.');
+        if(nameArray.length > 2)
+            return {result: false, label: ""};
+        if(validateName(domainName)!==domainName)
+            return {result: false, label: ""};
+        if(nameArray.length === 1) return {result: true, label: nameArray[0]};
+        if(nameArray.length === 2) {
+            return {result: nameArray[1]==="bnb", label: nameArray[0]};
+        } 
+        
+        return {result: false, label: ""}
+    }
     const handleCheckClick =()=>{
+        const domanName = getLabel(name);
+        if(!domanName.result) {
+            alert("Invalid domain name");
+            return;
+        }
+
         setLoading(true);
-        processSIDCheckValid(name).then((result)=>{
+        processSIDCheckValid(domanName.label).then((result)=>{
             if(result===true) {
                 alert("Please register");
             }
@@ -199,8 +218,13 @@ const ModuleSID = ({RentPeriod}: {RentPeriod: number})=>{
     }
 
     const handleRegisterClick = () => {
+        const domanName = getLabel(name);
+        if(!domanName.result) {
+            alert("Invalid domain name");
+            return;
+        }
         setLoading(true);
-        processSIDRegister(name).then((result)=>{
+        processSIDRegister(domanName.label).then((result)=>{
             if(result === true)
                 alert("finished");
             
