@@ -44,6 +44,7 @@ const ModuleENS = ({RentPeriod}: {RentPeriod: number})=>{
                 alert("Rent period must be larger than 28 days.");
                 return;
             }
+            const provider = new ethers.providers.JsonRpcProvider(providerUrl_eth)
             setLoading(true)
             if(!availableName) {
                 const result = await getAddressENS(domainName);
@@ -56,22 +57,21 @@ const ModuleENS = ({RentPeriod}: {RentPeriod: number})=>{
                 } else {
                 }
             }
-            const provider = new ethers.providers.JsonRpcProvider(providerUrl_eth);
-            const resultSwitchChain = await (wallet as EVMWallet).switchChain(chainid).then(()=>{
-                setLoading(false);
-                return true;
-            }).catch((err)=>{
-                alert(`Something went error for switch to Ethereum mannet. Error: ${err}`);
-                setLoading(false);
-                return false;
-            });
+            // const resultSwitchChain = await (wallet as EVMWallet).switchChain(chainid).then(()=>{
+            //     setLoading(false);
+            //     return true;
+            // }).catch((err)=>{
+            //     alert(`Something went error for switch to Ethereum mannet. Error: ${err}`);
+            //     setLoading(false);
+            //     return false;
+            // });
 
-            if(!resultSwitchChain) {
-                setLoading(false);
-                return;
-            }
-            const signer = (wallet as EVMWallet).getSigner();
-            const ensControllerContract = new ethers.Contract(ens_controller_address, ensABI, signer );
+            // if(!resultSwitchChain) {
+            //     setLoading(false);
+            //     return;
+            // }
+            // const signer = (wallet as EVMWallet).getSigner();
+            const ensControllerContract = new ethers.Contract(ens_controller_address, ensABI, provider );
             
             const price = await ensControllerContract.rentPrice(domainName, RentPeriod*24*3600);
             // const gas = await ensControllerContract.estimateGas.register(domainName, addr, 31536000, formatBytes32String("dotlab"), addr, [], true, 1 );
