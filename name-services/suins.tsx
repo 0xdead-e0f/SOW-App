@@ -96,12 +96,18 @@ const ModuleSUINS = ({ RentPeriod }: { RentPeriod: number }) => {
       }
 
       let price = 20;
-      if (domainName.length < 3) return false;
-      // if (domainName.length === 3) {
-      //   price = 500;
-      // } else if (domainName.length === 4) {
-      //   price = 100;
-      // }
+
+      const realDomainname = domainName.replace(".sui", "");
+      if (realDomainname.length < 3) {
+        alert("Domain name must be at least 3 characters.");
+        return false;
+      }
+      if (realDomainname.length === 3) {
+        price = 500;
+      } else if (realDomainname.length === 4) {
+        price = 100;
+      }
+
       setRentPrice(price * RentPeriod);
       setAvailableName(true);
       return true;
@@ -116,7 +122,7 @@ const ModuleSUINS = ({ RentPeriod }: { RentPeriod: number }) => {
     try {
       setLoading(true);
 
-      const numberOfYears = 1;
+      // const numberOfYears = 1;
 
       const rpcUrl = getFullnodeUrl("mainnet");
       const client = new SuiClient({ url: rpcUrl });
@@ -130,7 +136,7 @@ const ModuleSUINS = ({ RentPeriod }: { RentPeriod: number }) => {
             "0x6e0ddefc0ad98889c04bab9639e512c21766c5e6366f89e696956d9be6952871"
           ), // SUINS_ADDRESS
           tx.pure(domainName, "string"), // domain could be `my_name.sui`
-          tx.pure(numberOfYears, "u8"), // amount of years to register for. (1,2,3,4,5)
+          tx.pure(RentPeriod, "u8"), // amount of years to register for. (1,2,3,4,5)
           tx.splitCoins(tx.gas, [tx.pure(rentprice * 1000000000)]), // price for 3 digits = 500 SUI (500*1_000_000_000) MIST, 4 digits = 100 SUI, 5 digits+ = 20SUI
           tx.object(SUI_CLOCK_OBJECT_ID),
         ],
