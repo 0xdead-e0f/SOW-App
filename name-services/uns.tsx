@@ -61,7 +61,7 @@ var abi = [
   },
 ];
 
-async function getAddressENS(keys: any, tokenId: string) {
+async function getAddressUNS(keys: any, tokenId: string) {
   try {
     const provider = ethers.providers.getDefaultProvider(providerUrl_eth); //("goerli");
     var contract = new ethers.Contract(unsAddress, abi, provider);
@@ -100,7 +100,7 @@ const ModuleUNS = ({ RentPeriod }: { RentPeriod: number }) => {
       if (!availableName) {
         const tokenId = ethers.utils.namehash(name);
         const keys = ["crypto.BTC.address", "crypto.ETH.address"];
-        const result = await getAddressENS(keys, tokenId);
+        const result = await getAddressUNS(keys, tokenId);
 
         console.log(result);
 

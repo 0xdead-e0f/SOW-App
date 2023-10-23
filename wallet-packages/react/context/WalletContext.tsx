@@ -105,7 +105,11 @@ export const WalletContextProvider = ({
 
   const changeWallet = useCallback(
     (newWallet: Wallet) => {
-      if (!newWallet) throw new Error("Invalid wallet");
+      // if (!newWallet) throw new Error("Invalid wallet");
+      if (!newWallet) {
+        alert("Wallet not found. Install the corresponding wallet.");
+        return;
+      }
 
       const chainId = coalesceChainId(newWallet.getChainId());
 

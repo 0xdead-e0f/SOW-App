@@ -1,4 +1,10 @@
-import { ListItemIcon, ListItemText, makeStyles, MenuItem, TextField } from "@material-ui/core";
+import {
+  ListItemIcon,
+  ListItemText,
+  makeStyles,
+  MenuItem,
+  TextField,
+} from "@material-ui/core";
 import { useCallback, useEffect } from "react";
 import { ChainId } from "../../wallet-packages/wallets/core";
 import {
@@ -29,7 +35,7 @@ const useStyles = makeStyles((theme) => ({
 export default function WalletSelector({ chainId }: WalletSelectorProps) {
   const changeWallet = useChangeWallet();
   const wallets = useWalletsForChain(chainId);
-  useEffect (()=>{
+  useEffect(() => {
     changeWallet(wallets[0]);
   }, [chainId]);
   const onChange = useCallback(
@@ -40,9 +46,9 @@ export default function WalletSelector({ chainId }: WalletSelectorProps) {
     },
     [wallets, changeWallet]
   );
-  
+
   const classes = useStyles();
-  
+
   return (
     <TextField select variant="outlined" onChange={onChange}>
       {wallets.map((wallet) => (
@@ -51,7 +57,11 @@ export default function WalletSelector({ chainId }: WalletSelectorProps) {
           value={wallet.getName()}
         >
           <ListItemIcon className={classes.listItemIcon}>
-            <img src={wallet.getIcon()} alt={wallet.getName()} className={classes.icon} />
+            <img
+              src={wallet.getIcon()}
+              alt={wallet.getName()}
+              className={classes.icon}
+            />
           </ListItemIcon>
           <ListItemText>{wallet.getName()}</ListItemText>
         </MenuItem>

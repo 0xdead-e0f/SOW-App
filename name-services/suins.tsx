@@ -1,10 +1,13 @@
 import { useWallet } from "../wallet-packages/react";
-import { useState } from "react";
-import { EVMWallet } from "../wallet-packages/wallets/evm";
-// import { CosmWasmClient } from '@cosmjs/cosmwasm-stargate';
+import { useState, useEffect } from "react";
 import { getFullnodeUrl, SuiClient } from "@mysten/sui.js/client";
 import { TransactionBlock } from "@mysten/sui.js/transactions";
-import { SUI_CLOCK_OBJECT_ID } from "@mysten/sui.js";
+import {
+  SUI_CLOCK_OBJECT_ID,
+  JsonRpcProvider,
+  mainnetConnection,
+} from "@mysten/sui.js";
+import { SuinsClient } from "@suins/toolkit";
 import { SuiWallet } from "../wallet-packages/wallets/sui/sui";
 
 const suiNsPackage = {
@@ -24,19 +27,42 @@ const suiNsPackage = {
 
 async function getAddressSUINS(domainName: string) {
   try {
-    const bech32_address = undefined;
+    const provider = new JsonRpcProvider(mainnetConnection);
+    const suinsClient = new SuinsClient(provider, {
+      networkType: "mainnet",
+      contractObjects: {
+        packageId: suiNsPackage.PACKAGE_ADDRESS,
+        registry: suiNsPackage.REGISTRY,
+        reverseRegistry: suiNsPackage.REVERSE_REGISTRY,
+        suins: suiNsPackage.SUINS_ADDRESS,
+      },
+    });
 
-    return bech32_address;
-  } catch (err) {
-    throw err;
+    const address = await suinsClient.getNameObject(domainName);
+
+    if (address && address.id) {
+      return true;
+    }
+
+    return false;
+  } catch (error) {
+    console.log(error);
   }
+
+  return false;
 }
 
-const ModuleSUINS = () => {
+const ModuleSUINS = ({ RentPeriod }: { RentPeriod: number }) => {
   const wallet = useWallet();
-  const [name, setName] = useState("dogemos.osmo");
+  const [name, setName] = useState("suins.sui");
   const [rentprice, setRentPrice] = useState(0);
   const [availableName, setAvailableName] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setAvailableName(false);
+  }, [RentPeriod]);
+
   const handleNameChange = (event: any) => {
     setName(event.target.value);
     setRentPrice(0);
@@ -45,6 +71,18 @@ const ModuleSUINS = () => {
 
   const processCheckValid = async (domainName: string) => {
     try {
+      if (RentPeriod < 1) {
+        alert("Rent period must be larger than 1 year.");
+        return;
+      }
+
+      if (RentPeriod > 5) {
+        alert("Rent period must be less than 5 years.");
+        return;
+      }
+
+      setLoading(true);
+
       if (!availableName) {
         const result = await getAddressSUINS(domainName);
         if (result) {
@@ -59,20 +97,25 @@ const ModuleSUINS = () => {
 
       let price = 20;
       if (domainName.length < 3) return false;
-      if (domainName.length === 3) {
-        price = 500;
-      } else if (domainName.length === 4) {
-        price = 100;
-      }
-      setRentPrice(price);
+      // if (domainName.length === 3) {
+      //   price = 500;
+      // } else if (domainName.length === 4) {
+      //   price = 100;
+      // }
+      setRentPrice(price * RentPeriod);
       setAvailableName(true);
       return true;
     } catch (err) {
       alert(err);
+    } finally {
+      setLoading(false);
     }
   };
+
   const processRegister = async (domainName: string) => {
     try {
+      setLoading(true);
+
       const numberOfYears = 1;
 
       const rpcUrl = getFullnodeUrl("mainnet");
@@ -92,12 +135,18 @@ const ModuleSUINS = () => {
           tx.object(SUI_CLOCK_OBJECT_ID),
         ],
       });
+      const walletAddress = wallet?.getAddress();
+      if (!walletAddress) {
+        alert("Please connect to wallet.");
+        return;
+      }
 
       tx.transferObjects(
         [registration],
         tx.object((wallet as SuiWallet).getAddress()!)
       ); // transfer the name to the user
       // tx.transferObjects([registration], tx.pure(account, 'address')); // transfer the name to the user
+
       // sign and execute transaction
       await (wallet as SuiWallet).signAndSendTransaction({
         transactionBlock: tx,
@@ -105,7 +154,10 @@ const ModuleSUINS = () => {
 
       return true;
     } catch (err) {
+      console.log(err);
       alert(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -155,7 +207,17 @@ const ModuleSUINS = () => {
         </button>
       </div>
       <div className="pl-[100px]">
-        <span>{`Rent price is ${rentprice}`}</span>
+        <span>{`Rent price is ${rentprice}`} SUI</span>
+      </div>
+
+      <div
+        className={`${loading ? "visible" : "invisible"} absolute z-50 top-0
+              w-full h-full flex flex-col items-center justify-center bg-black/20`}
+      >
+        <div className="mx-10 flex h-[100px] w-[300px] flex-col items-center justify-center rounded-3xl bg-black/20 px-4">
+          <div className="loading-spinner "></div>
+          <span className="pt-[5px] text-[14px] text-white">Processing...</span>
+        </div>
       </div>
     </div>
   );

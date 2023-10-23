@@ -96,7 +96,7 @@ const IndexPage = () => {
               setPeriod(Number(e.target.value));
             }}
           />
-          <p>days</p>
+          <p>days(years)</p>
         </div>
         <div className="w-full flex flex-col pt-2">
           <p>ENS name service</p>
@@ -106,11 +106,15 @@ const IndexPage = () => {
           <p>SpaceID name service</p>
           <ModuleSID RentPeriod={period} />
         </div>
-        {/* <div className="w-full flex flex-col pt-2">
+        <div className="w-full flex flex-col pt-2">
           <p>Sui name service</p>
-          <ModuleSUINS />
-        </div> */}
-        {/* <div className='w-full flex flex-col pt-2'>
+          <ModuleSUINS RentPeriod={period} />
+        </div>
+        {/* <div className="w-full flex flex-col pt-2">
+          <p>Unstoppable name service</p>
+          <ModuleUNS RentPeriod={period} />
+        </div>
+        <div className='w-full flex flex-col pt-2'>
           <p>DotBit name service</p>
           <ModuleDAS />
         </div>
@@ -118,10 +122,10 @@ const IndexPage = () => {
           <p>ZKSync name service</p>
           <ModuleZKNS />
         </div> */}
-        <div className="w-full flex flex-col pt-2">
+        {/* <div className="w-full flex flex-col pt-2">
           <p>Solana name service</p>
           <ModuleSNS />
-        </div>
+        </div> */}
       </div>
     </Layout>
   );
