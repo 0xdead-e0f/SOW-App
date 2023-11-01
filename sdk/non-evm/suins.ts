@@ -1,6 +1,7 @@
 import {
   Connection,
   JsonRpcProvider,
+  mainnetConnection,
   normalizeSuiAddress,
   SuiAddress,
   SuiMoveObject,
@@ -28,7 +29,8 @@ export async function getAddressSui(domainName: string, fullnode: string) {
     const connection = new Connection({
       fullnode,
     });
-    const provider = new JsonRpcProvider(connection);
+    // const provider = new JsonRpcProvider(connection);
+    const provider = new JsonRpcProvider(mainnetConnection);
 
     const [, domain, topLevelDomain] =
       domainName.match(/^(.+)\.([^.]+)$/) || [];

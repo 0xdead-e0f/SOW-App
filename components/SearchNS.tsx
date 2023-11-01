@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { TextField, Button, Typography } from "@material-ui/core";
+import CircularProgress from "@material-ui/core/CircularProgress";
 
 import { getAddressDotBit, getNameDotBit } from "../sdk/evm/dotbit";
 import { getAddressENS, getNameENS } from "../sdk/evm/ens";
@@ -84,9 +85,20 @@ function SearchNS({ prefix, query }: { prefix: string; query: string }) {
   };
 
   const handleSearch = async () => {
-    setResults({});
+    setResults({
+      name: query + "." + prefix,
+      status: "",
+      contractAddress: "",
+      price: 0,
+      canRegister: false,
+    });
     setLoading(true);
-    await resolveAddress();
+    // await resolveAddress();
+
+    const res = await fetch(`/api/dns?prefix=${prefix}&name=${query}`);
+    const result = await res.json();
+    setResults(result);
+
     setLoading(false);
   };
 
@@ -113,7 +125,13 @@ function SearchNS({ prefix, query }: { prefix: string; query: string }) {
               justifyContent: "space-between",
             }}
           >
-            <div>{results.name}</div> <div>{results.status}</div>
+            <div>{results.name}</div>{" "}
+            <div>
+              {loading && (
+                <CircularProgress style={{ width: "20px", height: "20px" }} />
+              )}
+              {!loading && results.status}
+            </div>
           </div>
         )}
       </div>
