@@ -98,10 +98,16 @@ export const initWallets = (
     walletInfo: WALLETS["leap"],
   };
   const cosmosSeiConfig = {
-    chainId: "pacific-1" as SeiChainId,
-    type: "keplr" as SeiWalletType,
-    rpcUrl: "https://sei-rpc.polkachu.com/",
+    // sein mainnet
+    // chainId: "pacific-1" as SeiChainId,
+    // type: "keplr" as SeiWalletType,
+    // rpcUrl: "https://sei-rpc.polkachu.com/",
     // rpcUrl: "https://rpc.wallet.pacific-1.sei.io"
+
+    // sein testnet
+    chainId: "atlantic-2" as SeiChainId,
+    type: "keplr" as SeiWalletType,
+    rpcUrl: "https://rpc.atlantic-2.seinetwork.io/",
   };
   const cosmosSeiTestConfig = {
     chainId: "atlantic-2",

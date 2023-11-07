@@ -11,6 +11,7 @@ import ModuleSID from "../name-services/sid";
 import ModuleDAS from "../name-services/dotbit";
 import ModuleZKNS from "../name-services/zkns";
 import ModuleSUINS from "../name-services/suins";
+import ModuleSeiNS from "../name-services/seins";
 
 import ModuleUNS from "../name-services/uns";
 import ModuleSNS from "../name-services/sns";
@@ -109,6 +110,10 @@ const RegisterPage = () => {
         <div className="w-full flex flex-col pt-2">
           <p>Sui name service</p>
           <ModuleSUINS RentPeriod={period} />
+        </div>
+        <div className="w-full flex flex-col pt-2">
+          <p>Sei name service</p>
+          <ModuleSeiNS RentPeriod={period} />
         </div>
         {/* <div className="w-full flex flex-col pt-2">
           <p>Unstoppable name service</p>

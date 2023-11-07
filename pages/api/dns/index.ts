@@ -9,12 +9,14 @@ import { getAddressICNS } from "../../../sdk/non-evm/icns";
 import { getAddressSolana } from "../../../sdk/non-evm/solana";
 import { getAddressStargaze } from "../../../sdk/non-evm/stargaze";
 import { getAddressSui } from "../../../sdk/non-evm/suins";
+import { getAddressSeiNS } from "../../../sdk/non-evm/seins";
 
 let ethProviderUrl: string = "https://eth.llamarpc.com";
 let polygonProviderUrl: string = "https://polygon-rpc.com/";
 let bnbProviderUrl: string = "https://rpc.ankr.com/bsc";
 let suiProviderUrl: string =
   "https://sui.getblock.io/3b3d419a-32f2-40f0-a0fc-9a7da31a227c/mainnet/";
+let seiProviderUrl: string = "https://rpc.atlantic-2.seinetwork.io/";
 
 const handler = async (_req: NextApiRequest, res: NextApiResponse) => {
   const { prefix, name } = _req.query;
@@ -77,6 +79,9 @@ const searchNS = async (prefix: string, domainName: string) => {
       break;
     case "sui":
       address = await getAddressSui(domainName, suiProviderUrl);
+      break;
+    case "sei":
+      address = await getAddressSeiNS(domainName, seiProviderUrl);
       break;
     default:
       address = null;

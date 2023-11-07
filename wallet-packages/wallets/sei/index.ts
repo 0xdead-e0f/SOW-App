@@ -57,7 +57,9 @@ export const getSupportedWallets = (config: GetWalletsOptions): SeiWallet[] => {
 };
 
 export const getInstalledWallets = (config: GetWalletsOptions): SeiWallet[] => {
-  return SUPPORTED_WALLETS.filter((w) => !!window[parseInt(w.walletInfo.windowKey, 10)]).map(
+  return SUPPORTED_WALLETS.filter(
+    (w) => !!window[parseInt(w.walletInfo.windowKey, 10)]
+  ).map(
     (w) =>
       new SeiWallet({
         ...config,
@@ -125,6 +127,10 @@ export class SeiWallet extends Wallet<
     this.rpcUrl = config.rpcUrl;
   }
 
+  getOfflineSigner(): OfflineSigner {
+    return this.signer;
+  }
+
   getName(): string {
     return WALLETS[this.type]?.name || this.type;
   }
@@ -166,21 +172,27 @@ export class SeiWallet extends Wallet<
   }
 
   async connect(): Promise<string[]> {
-    const result = await suggestChain(this.type, {chainId:"pacific-1", chainName:"Sei", rpcUrl:this.rpcUrl, restUrl:"https://rest.wallet.pacific-1.sei.io"})
-      .catch((err)=>{
-        alert(err);
-        return null;
-      });
-    if(result===null) return [];
-    
+    const result = await suggestChain(this.type, {
+      chainId: "pacific-1",
+      chainName: "Sei",
+      rpcUrl: this.rpcUrl,
+      restUrl: "https://rest.wallet.pacific-1.sei.io",
+    }).catch((err) => {
+      alert(err);
+      return null;
+    });
+    if (result === null) return [];
+
     const { offlineSigner, accounts } = await connect(this.type, this.chainId)
-      .then((data) => { return data})
+      .then((data) => {
+        return data;
+      })
       .catch((error) => {
-        alert( error);
-        return {offlineSigner: null, accounts: null}
+        alert(error);
+        return { offlineSigner: null, accounts: null };
       });
-    
-    if(!offlineSigner || !accounts) {
+
+    if (!offlineSigner || !accounts) {
       return [];
     }
     this.signer = offlineSigner;
@@ -317,13 +329,13 @@ export class SeiWallet extends Wallet<
 //       bech32PrefixConsAddr: "cosmos" + "valcons",
 //       bech32PrefixConsPub: "cosmos" + "valconspub",
 //   },
-//   currencies: [ 
-//       { 
-//           coinDenom: "ATOM", 
-//           coinMinimalDenom: "uatom", 
-//           coinDecimals: 6, 
-//           coinGeckoId: "cosmos", 
-//       }, 
+//   currencies: [
+//       {
+//           coinDenom: "ATOM",
+//           coinMinimalDenom: "uatom",
+//           coinDecimals: 6,
+//           coinGeckoId: "cosmos",
+//       },
 //   ],
 //   feeCurrencies: [
 //       {

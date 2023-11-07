@@ -22,6 +22,7 @@ const namePrefixArray = [
   "sol",
   "apt",
   "sui",
+  "sei",
 ];
 
 function SearchPage() {
