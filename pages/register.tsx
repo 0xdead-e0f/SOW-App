@@ -57,7 +57,7 @@ const RegisterPage = () => {
   return (
     <Layout title="Dotlab Aggregator">
       <div className="w-full flex flex-col h-[90vh] bg-white gap-2">
-        <div className="w-full flex flex-row bg-gray-300 gap-2">
+        <div className="flex flex-row w-full gap-2 bg-gray-300">
           <div>
             <ChainSelector onChange={onChangeChain} />
           </div>
@@ -73,7 +73,7 @@ const RegisterPage = () => {
               </button>
             )}
             {pubKey && (
-              <span className="text-blue-400 font-bold">{pubKey}</span>
+              <span className="font-bold text-blue-400">{pubKey}</span>
             )}
           </div>
           <div>
@@ -87,11 +87,11 @@ const RegisterPage = () => {
             )}
           </div>
         </div>
-        <div className="w-full flex flex-row py-4 gap-2">
+        <div className="flex flex-row w-full gap-2 py-4">
           <p>Rent period</p>
           <input
             type="number"
-            className="border text-right"
+            className="text-right border"
             value={period}
             onChange={(e) => {
               setPeriod(Number(e.target.value));
@@ -99,35 +99,35 @@ const RegisterPage = () => {
           />
           <p>days(years)</p>
         </div>
-        <div className="w-full flex flex-col pt-2">
+        <div className="flex flex-col w-full pt-2">
           <p>ENS name service</p>
           <ModuleENS RentPeriod={period} />
         </div>
-        <div className="w-full flex flex-col pt-2">
+        <div className="flex flex-col w-full pt-2">
           <p>SpaceID name service</p>
           <ModuleSID RentPeriod={period} />
         </div>
-        <div className="w-full flex flex-col pt-2">
+        <div className="flex flex-col w-full pt-2">
           <p>Sui name service</p>
           <ModuleSUINS RentPeriod={period} />
         </div>
-        <div className="w-full flex flex-col pt-2">
+        <div className="flex flex-col w-full pt-2">
           <p>Sei name service</p>
           <ModuleSeiNS RentPeriod={period} />
         </div>
-        {/* <div className="w-full flex flex-col pt-2">
+        <div className="flex flex-col w-full pt-2">
           <p>Unstoppable name service</p>
           <ModuleUNS RentPeriod={period} />
         </div>
-        <div className='w-full flex flex-col pt-2'>
+        {/* <div className='flex flex-col w-full pt-2'>
           <p>DotBit name service</p>
           <ModuleDAS />
         </div>
-        <div className='w-full flex flex-col pt-2'>
+        <div className='flex flex-col w-full pt-2'>
           <p>ZKSync name service</p>
           <ModuleZKNS />
         </div> */}
-        {/* <div className="w-full flex flex-col pt-2">
+        {/* <div className="flex flex-col w-full pt-2">
           <p>Solana name service</p>
           <ModuleSNS />
         </div> */}

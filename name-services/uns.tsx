@@ -1,84 +1,24 @@
+import { useState } from "react";
+import axios from "axios";
 import { useWallet } from "../wallet-packages/react";
 import { BigNumber, ethers } from "ethers";
-import { useState } from "react";
 import ensABI from "../utils/contract-abi/ens/controller.json";
 import { EVMWallet } from "../wallet-packages/wallets/evm";
 import { formatBytes32String } from "ethers/lib/utils.js";
+const { default: Resolution } = require("@unstoppabledomains/resolution");
 
-import { Resolution } from "@unstoppabledomains/resolution";
-
-// const ens_controller_address = "0x253553366Da8546fC250F225fe3d25d0C782303b";
-// const ens_public_resolver = "0x231b0Ee14048e9dCcD1d247744d114a4EB5E8E63";
-// const providerUrl_eth = "https://eth-rpc.gateway.pokt.network";
-// const chainid = 1;
-
-// for testnet
-const ens_controller_address = "0x2a7084870bB724175a3C96Da8FaA55128fa3E19D";
-const ens_public_resolver = "0x58034A288D2E56B661c9056A0C27273E5460B63c";
-const providerUrl_eth = "https://goerli.blockpi.network/v1/rpc/public";
 const chainid = 5;
+const UNS_API_KEY: string = "jykfkgvapza5_9lrvsczxqypouvxqfw3w_ydtdzpfq7pao0d";
 
-// UNS Registry Contract Address
-var unsAddress = "0x070e83FCed225184E67c86302493ffFCDB953f71";
+async function getAddressUNS(domainName: string) {
+  const result = await axios.get(`/api/dns/uns?&name=${domainName}`);
 
-// Partial ABI, just for the getMany function.
-var abi = [
-  {
-    constant: true,
-    inputs: [
-      {
-        internalType: "string[]",
-        name: "keys",
-        type: "string[]",
-      },
-      {
-        internalType: "uint256",
-        name: "tokenId",
-        type: "uint256",
-      },
-    ],
-    name: "getData",
-    outputs: [
-      {
-        internalType: "address",
-        name: "resolver",
-        type: "address",
-      },
-      {
-        internalType: "address",
-        name: "owner",
-        type: "address",
-      },
-      {
-        internalType: "string[]",
-        name: "values",
-        type: "string[]",
-      },
-    ],
-    payable: false,
-    stateMutability: "view",
-    type: "function",
-  },
-];
-
-async function getAddressUNS(keys: any, tokenId: string) {
-  try {
-    const provider = ethers.providers.getDefaultProvider(providerUrl_eth); //("goerli");
-    var contract = new ethers.Contract(unsAddress, abi, provider);
-    const ret = contract.getData(keys, tokenId);
-
-    console.log(ret);
-
-    return ret;
-  } catch (err) {
-    console.log(err);
-    throw err;
-  }
+  return result.data;
 }
 
 const ModuleUNS = ({ RentPeriod }: { RentPeriod: number }) => {
   const wallet = useWallet();
-  const [name, setName] = useState("alice.eth");
+  const [name, setName] = useState("alice.crypto");
   const [rentprice, setRentPrice] = useState(0);
   const [availableName, setAvailableName] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -88,7 +28,7 @@ const ModuleUNS = ({ RentPeriod }: { RentPeriod: number }) => {
     setAvailableName(false);
   };
 
-  const processENSCheckValid = async (domainName: string) => {
+  const processUNSCheckValid = async (domainName: string) => {
     try {
       if (RentPeriod < 28) {
         alert("Rent period must be larger than 28 days.");
@@ -98,52 +38,36 @@ const ModuleUNS = ({ RentPeriod }: { RentPeriod: number }) => {
       setLoading(true);
 
       if (!availableName) {
-        const tokenId = ethers.utils.namehash(name);
-        const keys = ["crypto.BTC.address", "crypto.ETH.address"];
-        const result = await getAddressUNS(keys, tokenId);
+        const index = domainName.lastIndexOf(".");
+        if (index !== -1) {
+          domainName = domainName.substring(0, index);
+        }
 
+        const result = await getAddressUNS(domainName);
         console.log(result);
 
-        if (result) {
-          alert(`${name} already registered with this address ${result}`);
+        let records = "";
+        if (result.registered) {
+          for (const key in result.address) {
+            if (result.address.hasOwnProperty(key)) {
+              records += key + ": " + result.address[key] + "\r\n";
+            }
+          }
+
+          alert(`${name} already registered with this address ${records}`);
+
           setRentPrice(0);
           setAvailableName(false);
           setLoading(false);
           return false;
-        } else {
         }
+
+        setRentPrice(result.price);
       }
-      // const resultSwitchChain = await (wallet as EVMWallet).switchChain(chainid).then(()=>{
-      //     setLoading(false);
-      //     return true;
-      // }).catch((err)=>{
-      //     alert(`Something went error for switch to Ethereum mannet. Error: ${err}`);
-      //     setLoading(false);
-      //     return false;
-      // });
 
-      // if(!resultSwitchChain) {
-      //     setLoading(false);
-      //     return;
-      // }
-      // const signer = (wallet as EVMWallet).getSigner();
-
-      const provider = new ethers.providers.JsonRpcProvider(providerUrl_eth);
-
-      const ensControllerContract = new ethers.Contract(
-        ens_controller_address,
-        ensABI,
-        provider
-      );
-
-      const price = await ensControllerContract.rentPrice(
-        domainName,
-        RentPeriod * 24 * 3600
-      );
-      // const gas = await ensControllerContract.estimateGas.register(domainName, addr, 31536000, formatBytes32String("dotlab"), addr, [], true, 1 );
-      setRentPrice(price[0]);
       setAvailableName(true);
       setLoading(false);
+
       return true;
     } catch (err) {
       console.log(err);
@@ -153,7 +77,6 @@ const ModuleUNS = ({ RentPeriod }: { RentPeriod: number }) => {
   };
   const processENSRegister = async (domainName: string) => {
     try {
-      const provider = new ethers.providers.JsonRpcProvider(providerUrl_eth);
       const resultSwitchChain = await (wallet as EVMWallet)
         .switchChain(chainid)
         .then(() => {
@@ -168,86 +91,68 @@ const ModuleUNS = ({ RentPeriod }: { RentPeriod: number }) => {
 
       if (!resultSwitchChain) return;
 
-      setLoading(true);
-      const signer = (wallet as EVMWallet).getSigner();
-      const ensControllerContract = new ethers.Contract(
-        ens_controller_address,
-        ensABI,
-        signer
-      );
-
-      const addr = await signer.getAddress();
-      const secret = formatBytes32String("dotlab" + domainName);
-
-      const commit_data = await ensControllerContract.makeCommitment(
-        domainName,
-        addr,
-        RentPeriod * 24 * 3600,
-        secret,
-        ens_public_resolver,
-        [],
-        true,
-        1
-      );
-
-      const resultCommit = await ensControllerContract
-        .commit(commit_data)
-        .then((data: any) => {
-          return { tx: data };
-        })
-        .catch((error: any) => {
-          return { tx: null, errcode: error.error?.code! };
-        });
-      if (resultCommit.tx !== null) {
-        const txCommitReceipt = await resultCommit.tx.wait();
-        if (txCommitReceipt.status !== 1) {
-          alert("Commit error");
-          setLoading(false);
-          return;
-        }
-      } else if (resultCommit.errcode !== -32603) {
-        setLoading(false);
+      const walletAddress = wallet?.getAddress();
+      if (!walletAddress) {
+        alert("Please connect to wallet.");
         return;
       }
 
-      const price = await ensControllerContract.rentPrice(
-        domainName,
-        RentPeriod * 24 * 3600
-      );
-      const bufferedPrice = price[0].mul(110).div(100);
+      const index = domainName.lastIndexOf(".");
+      if (index !== -1) {
+        domainName = domainName.substring(0, index);
+      }
 
-      await new Promise(() =>
-        setTimeout(async () => {
-          const resultRegister = await ensControllerContract.register(
-            domainName,
-            addr,
-            RentPeriod * 24 * 3600,
-            secret,
-            ens_public_resolver,
-            [],
-            true,
-            1,
-            {
-              value: bufferedPrice,
-              gasLimit: 510000,
-              nonce: undefined,
-            }
-          );
+      setLoading(true);
 
-          const txRegisterReceipt = await resultRegister.wait();
-          alert(txRegisterReceipt);
-        }, 60000)
-      );
-      setLoading(false);
+      const data = {
+        name: domainName,
+        address: walletAddress,
+      };
+
+      let result = await axios.post(`/api/dns/uns?&name=${domainName}`, data);
+
+      result = await result.data;
+      console.log(result);
+
+      if (result.code) {
+        alert(`ERROR : ${result.code}\r\n${result.message}`);
+      } else {
+        const status = result.operation.status;
+        switch (status) {
+          case "QUEUED":
+            alert("Registered successfully.");
+            break;
+          case "SIGNATURE_REQUIRED":
+            alert("Registered successfully.");
+            break;
+          case "PROCESSING":
+            alert("Registered successfully.");
+            break;
+          case "COMPLETED":
+            alert("Registered successfully.");
+            break;
+          case "FAILED":
+            alert("Registration failed.");
+            break;
+          case "CANCELLED":
+            alert("Registration canceled.");
+            break;
+          default:
+            alert("Unknown results");
+            break;
+        }
+      }
+
       return true;
     } catch (err) {
-      setLoading(false);
       alert(err);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleCheckClick = () => {
-    processENSCheckValid(name).then((result) => {
+    processUNSCheckValid(name).then((result) => {
       if (result === true) {
         alert("Please register");
       }
@@ -255,12 +160,14 @@ const ModuleUNS = ({ RentPeriod }: { RentPeriod: number }) => {
   };
 
   const handleRegisterClick = () => {
-    processENSRegister(name).then((result) => {});
+    processENSRegister(name).then((result) => {
+      setAvailableName(false);
+    });
   };
 
   return (
-    <div className="w-full flex flex-col gap-2 relative">
-      <div className="w-full flex flex-row gap-2 items-center justify-center px-8">
+    <div className="relative flex flex-col w-full gap-2">
+      <div className="flex flex-row items-center justify-center w-full gap-2 px-8">
         <input
           id="name"
           name="name"
@@ -290,9 +197,7 @@ const ModuleUNS = ({ RentPeriod }: { RentPeriod: number }) => {
         </button>
       </div>
       <div className="pl-[100px]">
-        <span>{`Rent price is ${ethers.utils.formatEther(
-          rentprice
-        )} ETH`}</span>
+        <span>{`Rent price is ${rentprice} cents`}</span>
       </div>
 
       <div

@@ -11,8 +11,12 @@ import { getAddressStargaze } from "../../../sdk/non-evm/stargaze";
 import { getAddressSui } from "../../../sdk/non-evm/suins";
 import { getAddressSeiNS } from "../../../sdk/non-evm/seins";
 
-let ethProviderUrl: string = "https://eth.llamarpc.com";
-let polygonProviderUrl: string = "https://polygon-rpc.com/";
+const unsEndpointUrl: string = "https://api.unstoppabledomains.com";
+const unsSandboxEndpointUrl: string = "https://api.ud-sandbox.com";
+let unsEthProviderUrl: string = "https://mainnet.infura.io/v3";
+let unsPolygonProviderUrl: string = "https://polygon-mainnet.infura.io/v3";
+const unsApiKey: string = "jykfkgvapza5_9lrvsczxqypouvxqfw3w_ydtdzpfq7pao0d";
+
 let bnbProviderUrl: string = "https://rpc.ankr.com/bsc";
 let suiProviderUrl: string =
   "https://sui.getblock.io/3b3d419a-32f2-40f0-a0fc-9a7da31a227c/mainnet/";
@@ -53,11 +57,23 @@ const searchNS = async (prefix: string, domainName: string) => {
       address = await getAddressSID(domainName);
       break;
     case "crypto":
-      address = await getAddressResolution(
+      const results = await getAddressResolution(
         domainName,
-        ethProviderUrl,
-        polygonProviderUrl
+        unsSandboxEndpointUrl,
+        unsEthProviderUrl,
+        unsPolygonProviderUrl,
+        unsApiKey
       );
+
+      console.log(results);
+
+      address = null;
+      if (results && results.availability.status === "AVAILABLE") {
+        address = null;
+      } else {
+        address = domainName;
+      }
+
       break;
     case "bit":
       address = await getAddressDotBit(domainName);

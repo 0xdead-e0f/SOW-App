@@ -14,8 +14,12 @@ import { getAddressStargaze, getNameStargaze } from "../sdk/non-evm/stargaze";
 import { getAddressSui, getNameSui } from "../sdk/non-evm/suins";
 import { getAddressSeiNS, getNameSeiNS } from "../sdk/non-evm/seins";
 
-let ethProviderUrl: string = "https://eth.llamarpc.com";
-let polygonProviderUrl: string = "https://polygon-rpc.com/";
+const unsEndpointUrl: string = "https://api.unstoppabledomains.com";
+const unsSandboxEndpointUrl: string = "https://api.ud-sandbox.com";
+let unsEthProviderUrl: string = "https://mainnet.infura.io/v3";
+let unsPolygonProviderUrl: string = "https://polygon-mainnet.infura.io/v3";
+const unsApiKey: string = "jykfkgvapza5_9lrvsczxqypouvxqfw3w_ydtdzpfq7pao0d";
+
 let bnbProviderUrl: string = "https://rpc.ankr.com/bsc";
 let suiProviderUrl: string =
   "https://sui.getblock.io/3b3d419a-32f2-40f0-a0fc-9a7da31a227c/mainnet/";
@@ -46,8 +50,10 @@ function SearchNS({ prefix, query }: { prefix: string; query: string }) {
       case "crypto":
         address = await getAddressResolution(
           domainName,
-          ethProviderUrl,
-          polygonProviderUrl
+          unsEndpointUrl,
+          unsEthProviderUrl,
+          unsPolygonProviderUrl,
+          unsApiKey
         );
         break;
       case "bit":
